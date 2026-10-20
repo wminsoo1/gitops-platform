@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: member-a
+  namespace: argocd
+spec:
+  description: "팀원 A (spring-error-app) 배포 허용 범위"
+  sourceRepos:
+    - https://github.com/wminsoo1/spring-error-app.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: member-a
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: ResourceQuota
+    - group: ""
+      kind: LimitRange
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
