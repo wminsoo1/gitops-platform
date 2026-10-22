@@ -11,7 +11,8 @@ spec:
         elements:
           - name: member-a
             repo: https://github.com/wminsoo1/spring-error-app.git
-            path: deploy
+            path: deploy/chart
+            valueFile: values-prod.yaml   # 어느 서버 값으로 띄울지 (values-test / values-model / values-prod)
   template:
     metadata:
       name: "{{.name}}"
@@ -21,6 +22,9 @@ spec:
         repoURL: "{{.repo}}"
         targetRevision: main
         path: "{{.path}}"
+        helm:
+          valueFiles:
+            - "{{.valueFile}}"
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{.name}}"
