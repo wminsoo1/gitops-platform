@@ -12,8 +12,8 @@ spec:
           - name: member-a
             repo: https://github.com/wminsoo1/spring-error-app.git
             path: deploy/chart
-            revision: main                # 실험 중에는 run.sh가 experiment로 바꿈
-            valueFile: values-prod.yaml   # 어느 서버 값으로 띄울지 (values-test / values-model / values-prod)
+            revision: experiment
+            valueFile: values-test.yaml   # 어느 서버 값으로 띄울지 (values-test / values-model / values-prod)
   template:
     metadata:
       name: "{{.name}}"
