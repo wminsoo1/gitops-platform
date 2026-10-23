@@ -1,0 +1,23 @@
+# CPU·메모리 사용량 수집 (kubectl top, RQ2 실험의 추가 자원 기록용)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metrics-server
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes-sigs.github.io/metrics-server/   # 공식 Helm 저장소
+    chart: metrics-server
+    targetRevision: 3.14.0                                          # 버전 고정
+    helm:
+      values: |
+        args:
+          - --kubelet-insecure-tls      # kind의 kubelet 인증서가 자체 서명이라 검증을 끔 (로컬 실습용)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
