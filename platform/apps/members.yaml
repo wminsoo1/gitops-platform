@@ -12,7 +12,7 @@ spec:
           - name: member-a
             repo: https://github.com/wminsoo1/spring-error-app.git
             path: deploy/chart
-            revision: experiment
+            revision: main
             valueFile: values-prod.yaml   # 어느 서버 값으로 띄울지 (values-test / values-model / values-prod)
   template:
     metadata:
