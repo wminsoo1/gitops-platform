@@ -13,7 +13,7 @@ spec:
             repo: https://github.com/wminsoo1/spring-error-app.git
             path: deploy/chart
             revision: experiment
-            valueFile: values-test.yaml   # 어느 서버 값으로 띄울지 (values-test / values-model / values-prod)
+            valueFile: values-model.yaml   # 어느 서버 값으로 띄울지 (values-test / values-model / values-prod)
   template:
     metadata:
       name: "{{.name}}"
