@@ -1,0 +1,12 @@
+# 실습 DNS (회사 DNS 역할). 클러스터 밖 Docker 컨테이너로 돈다.
+# .lab 으로 끝나는 이름은 여기서 답하고, 나머지는 WSL 원래 DNS로 넘긴다.
+lab:53 {
+    hosts {
+        172.18.0.2 harbor.lab    # Harbor 입구 = 노드 IP (NodePort 30002는 이미지 주소에 적음)
+    }
+    log
+}
+.:53 {
+    forward . 10.255.255.254     # WSL 원래 DNS (github.com 등)
+    cache 30
+}

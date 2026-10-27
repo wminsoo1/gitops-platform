@@ -1,0 +1,15 @@
+# 실습 DNS 실행: docker compose -f cluster/lab-dns/compose.yaml up -d
+services:
+  lab-dns:
+    image: registry.k8s.io/coredns/coredns:v1.14.6   # 클러스터 CoreDNS와 같은 버전
+    container_name: lab-dns
+    command: -conf /etc/coredns/Corefile
+    volumes:
+      - ./Corefile:/etc/coredns/Corefile:ro
+    restart: unless-stopped                            # WSL을 다시 켜도 자동 실행
+    networks:
+      kind:
+        ipv4_address: 172.18.0.53                      # 고정 IP: 모두 이 주소로 묻는다
+networks:
+  kind:
+    external: true                                     # kind 클러스터가 쓰는 Docker 네트워크

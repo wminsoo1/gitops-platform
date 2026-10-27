@@ -1,0 +1,31 @@
+# Kyverno: Pod가 만들어질 때 이미지 서명을 검사하는 정책 엔진 (admission webhook)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://kyverno.github.io/kyverno/   # 공식 Helm 저장소
+    chart: kyverno
+    targetRevision: 3.9.2                          # Kyverno v1.19.2
+    helm:
+      valuesObject:
+        features:
+          registryClient:
+            allowInsecure: true                    # 실습 Harbor가 HTTP라 허용 (실무는 HTTPS)
+        admissionController:
+          replicas: 1                              # 서명 검사 담당 (실습 메모리 고려)
+        cleanupController:
+          enabled: false                           # 정리 기능은 안 씀 (메모리 절약)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kyverno
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true                       # CRD가 커서 필요

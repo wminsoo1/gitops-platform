@@ -1,0 +1,36 @@
+# member-a 의 Pod가 harbor.lab:30002/member-a/* 이미지를 쓰면 우리 공개키로 서명을 확인한다
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-harbor-images
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"                                    # Kyverno 설치 다음
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true    # Kyverno CRD가 생기기 전에도 동기화
+spec:
+  webhookConfiguration:
+    failurePolicy: Fail          # Harbor에 못 닿아 검사를 못 하면 Pod 생성도 실패
+    timeoutSeconds: 30
+  background: false
+  rules:
+    - name: check-cosign-signature
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [member-a]
+      verifyImages:
+        - imageReferences:
+            - "harbor.lab:30002/member-a/*"   # 이 주소의 이미지만 검사 (분석 Job의 curl 이미지 등은 제외)
+          failureAction: Audit                # 처음엔 기록만. 확인 뒤 Enforce
+          mutateDigest: true                  # 통과하면 이미지 주소를 digest로 고정
+          attestors:
+            - count: 1
+              entries:
+                - keys:
+                    publicKeys: |-
+                      -----BEGIN PUBLIC KEY-----
+                      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFDhvTe6dUcuMyzDueyjTV1fuYGCp
+                      dMNfODWaD1nf7PcuvVvFG0iu2dwAc0Lf46xjeqOXUpktslrcpKd4glJdJA==
+                      -----END PUBLIC KEY-----
+                    rekor:
+                      ignoreTlog: true        # Rekor에 안 올렸으니 투명성 로그 확인 생략
