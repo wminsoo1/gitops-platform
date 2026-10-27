@@ -1,31 +1,37 @@
 # member-a 의 harbor.lab:30002/member-a/* 이미지는 우리 공개키로 서명돼 있어야 Pod를 만든다
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+# 새 형식(Sigstore 번들 + OCI referrers)과 예전 형식(.sig 태그) 서명을 모두 읽는다
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
 metadata:
   name: verify-harbor-images
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
-  background: false
-  rules:
-    - name: check-cosign-signature
-      match:
-        any:
-          - resources:
-              kinds: [Pod]
-              namespaces: [member-a]
-      verifyImages:
-        - imageReferences:
-            - "harbor.lab:30002/member-a/*"
-          failureAction: Enforce        # 서명이 없거나 다른 키면 Pod 생성 거부
-          attestors:
-            - entries:
-                - keys:
-                    publicKeys: |-
-                      -----BEGIN PUBLIC KEY-----
-                      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFDhvTe6dUcuMyzDueyjTV1fuYGCp
-                      dMNfODWaD1nf7PcuvVvFG0iu2dwAc0Lf46xjeqOXUpktslrcpKd4glJdJA==
-                      -----END PUBLIC KEY-----
-                    rekor:
-                      ignoreTlog: true  # 서명을 공개 Rekor에 올리지 않았으므로
+  validationActions: [Deny]          # 서명이 없거나 다른 키면 생성 거부
+  matchConstraints:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: member-a
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "harbor.lab:30002/member-a/*"
+  attestors:
+    - name: cosign
+      cosign:
+        key:
+          data: |
+            -----BEGIN PUBLIC KEY-----
+            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFDhvTe6dUcuMyzDueyjTV1fuYGCp
+            dMNfODWaD1nf7PcuvVvFG0iu2dwAc0Lf46xjeqOXUpktslrcpKd4glJdJA==
+            -----END PUBLIC KEY-----
+        ctlog:
+          insecureIgnoreTlog: true   # 서명을 공개 Rekor에 올리지 않았으므로
+  validations:
+    - expression: >-
+        images.containers.map(image, verifyImageSignatures(image, [attestors.cosign])).all(e, e > 0)
+      message: "서명이 없거나 우리 공개키로 확인되지 않음"
