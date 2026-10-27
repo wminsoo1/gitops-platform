@@ -23,6 +23,7 @@ spec:
             - "harbor.lab:30002/member-a/*"   # 이 주소의 이미지만 검사 (분석 Job의 curl 이미지 등은 제외)
           failureAction: Audit                # 처음엔 기록만. 확인 뒤 Enforce
           mutateDigest: true                  # 통과하면 이미지 주소를 digest로 고정
+          cosignOCI11: true                   # cosign v3 서명은 OCI 1.1 referrers로 붙어 있어 그 방식으로 찾음
           attestors:
             - count: 1
               entries:
