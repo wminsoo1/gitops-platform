@@ -9,6 +9,9 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   validationActions: [Deny]          # 서명이 없거나 다른 키면 생성 거부
+  autogen:
+    podControllers:
+      controllers: []                # Pod만 검사 (ReplicaSet 등에 자동으로 붙이지 않음)
   matchConstraints:
     namespaceSelector:
       matchLabels:
