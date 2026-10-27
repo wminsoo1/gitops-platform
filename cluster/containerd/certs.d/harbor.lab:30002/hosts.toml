@@ -1,5 +1,0 @@
-# 노드 containerd: harbor.lab:30002 는 HTTP로 접속
-server = "http://harbor.lab:30002"
-
-[host."http://harbor.lab:30002"]
-  capabilities = ["pull", "resolve"]
