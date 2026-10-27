@@ -14,9 +14,12 @@ spec:
     targetRevision: 3.9.2                  # Kyverno v1.19.2
     helm:
       valuesObject:
-        features:
-          registryClient:
-            allowInsecure: true            # 실습 Harbor가 HTTP라 허용
+        global:
+          caCertificates:                  # Harbor 인증서를 확인할 CA: 노드의 시스템 인증서 묶음을 그대로 씀
+            volume:                        # (노드에 사내 CA가 설치돼 있어야 함)
+              hostPath:
+                path: /etc/ssl/certs/ca-certificates.crt
+                type: File
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
